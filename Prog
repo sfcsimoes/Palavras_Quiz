@@ -1,0 +1,104 @@
+
+using System;
+using System.IO;
+
+namespace ConsoleApp1
+{
+    class Program
+    {
+        static string LerPalavra()
+        {
+            Random rand = new Random();
+            int i, n = rand.Next(0, 7105);
+            string palavra = "";
+
+            StreamReader SR = new StreamReader("Palavras5L.txt");
+            {
+                for (i = 0; i < n; i++)
+                {
+                    palavra = SR.ReadLine();
+                }
+                return (palavra);
+
+            }
+        }
+
+        static void Le_Verifica_Letras(string plvr)
+        {
+            int controlo;
+            char[] palavra, entrada;
+            string ent = "";
+            int tentativas = 0;
+
+            palavra = plvr.ToCharArray();
+
+
+
+            do
+            {
+                Console.Write("Tentativa {0}:", tentativas + 1);
+                ent = Console.ReadLine();
+                entrada = ent.ToCharArray();
+                tentativas++;
+
+                if (ent.Equals(plvr, StringComparison.InvariantCultureIgnoreCase) && ent.Equals(plvr, StringComparison.OrdinalIgnoreCase))
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkGreen;
+                    Console.WriteLine("{0}", plvr);
+                    Console.ResetColor();
+                    Console.WriteLine("palvra Correta");
+                    break;
+                }
+
+                for (int i = 0; i < ent.Length; i++)
+                {
+                    controlo = 0;
+                    if (palavra[i] == entrada[i])
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkGreen;
+                        Console.Write("{0}", entrada[i]);
+                        Console.ResetColor();
+                        controlo = 1;
+
+                    }
+                    else
+                    {
+                        for (int i2 = 0; i2 < palavra.Length; i2++)
+                        {
+                            if ((entrada[i] == palavra[i2]) && (i != i2))
+                            {
+                                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                                Console.Write("{0}", entrada[i]);
+                                Console.ResetColor();
+                                controlo = 1;
+                            }
+                            if (controlo == 1)
+                                break;
+                        }
+                    }
+                    if (controlo == 0)
+                        Console.Write("{0}", entrada[i]);
+
+                }
+                Console.WriteLine();
+            } while (tentativas < 6);
+            if (tentativas == 6)
+                Console.WriteLine("Esgotaste todas as tentativas");
+   
+        }
+
+        static void Main(string[] args)
+        {
+            //7105 @ random
+
+            string plvr = "";
+            
+
+            plvr= LerPalavra();
+            Console.WriteLine(plvr);
+            Le_Verifica_Letras(plvr);
+
+
+        }
+    }
+}
