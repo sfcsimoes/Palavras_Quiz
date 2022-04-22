@@ -1,54 +1,186 @@
-
 using System;
 using System.IO;
+using System.Collections.Generic;
+
+
 
 namespace ConsoleApp1
 {
     class Program
     {
-        static string LerPalavra()
-        {
-            Random rand = new Random();
-            int i, n = rand.Next(0, 7105);
-            string palavra = "";
 
-            StreamReader SR = new StreamReader("Palavras5L.txt");
+        static void AdicionarJogador ()
+        {   
+            Jogador j=new Jogador ();
+            StreamWriter sw;
+
+            Console.WriteLine("Nome: ");
+            j.Nome = Console.ReadLine ();
+            Console.WriteLine("E-mail: ");
+            j.Email = Console.ReadLine();          
+            Console.WriteLine("Password");
+            j.Password = Console.ReadLine ();
+            j.Data = DateTime.UtcNow;
+
+
+            if (File.Exists(@"Jogadores.txt"))
+                sw = File.AppendText(@"Jogadores.txt"); // apprend faz com que o ponteiro de escrita vá para a ultima linha do ficheiro
+            else
+                sw = File.CreateText(@"Jogadores.txt"); // caso ficheiro nao exista cria o ficheiro
+
+            sw.WriteLine("{0};{1};{2};{3}", j.Nome, j.Email, j.Data.ToLocalTime(), j.Password);
+            sw.Close(); // fechar o ficheiro para que não fique preso em utilização" 
+
+
+        }
+
+        static void LimpaFicheiro(List<Jogador>jgr)
+        {
+            StreamWriter SR = new StreamWriter(@"Jogadores.txt", false);
+
+            foreach (Jogador jl in jgr)
             {
-                for (i = 0; i < n; i++)
+                SR.WriteLine("{0};{1};{2};{3}", jl.Nome, jl.Email, jl.Data.ToLocalTime(), jl.Password);
+            }
+
+            SR.Close();    
+
+        }
+
+
+
+        static void ListarJogadores ()
+        {
+
+            List<Jogador> jgr = new List<Jogador>();
+            LeJogadores(jgr);
+
+
+            
+            foreach (Jogador jl in jgr) // varrer todos os dados utilizando o ponteir jl
+            {
+                Console.Write("Nome: {0}\nE-mail: {1}\nData Ultimo Acesso: {2}\nPassword: {3}\n-----", jl.Nome, jl.Email, jl.Data, jl.Password);
+            }
+
+
+
+        }
+
+        static void LeJogadores (List<Jogador> jgr)
+        {
+            string[] copia;
+            string navega;
+
+
+            using (StreamReader SR = new StreamReader(@"Jogadores.txt"))
+            {
+                while ((navega = SR.ReadLine()) != null)
                 {
-                    palavra = SR.ReadLine();
+                    copia = navega.Split(';');
+                    jgr.Add(new Jogador(copia[0], copia[1], Convert.ToDateTime(copia[2]), copia[3]));
+
                 }
-                return (palavra);
+            }
+
+        }
+
+        static void EliminarJogadores ()
+        {
+            string elimina;
+
+
+            List<Jogador> jgr = new List<Jogador>();
+
+            Console.Write("Qual o jogador que pretende remover? (Nome)");
+            elimina=Console.ReadLine();
+
+            LeJogadores(jgr);
+
+            if (jgr.Exists(jgr => jgr.Nome == elimina))
+            {
+                foreach (Jogador jl in jgr)
+                {
+                    if (jl.Nome == elimina)
+                        jgr.Remove(jl);
+                }
+
 
             }
+            else
+                Console.WriteLine("Esse jogar não existe na base dados");
+
+            LimpaFicheiro(jgr);
+
+
+        }
+
+
+        //static string LerPalavra()
+        //{
+        //    Random rand = new Random();
+        //    int i, n = rand.Next(0, 7105);
+        //    string palavra = "";
+
+        //    StreamReader SR = new StreamReader("Palavras5L.txt");
+        //    {
+        //        for (i = 0; i < n; i++)
+        //        {
+        //            palavra = SR.ReadLine();
+        //        }
+        //        return (palavra);
+
+        //    }
+        //}
+
+        static char[] Remover_Acentos(string plvr) // Remover acentos das letras
+        {
+            plvr = plvr.ToUpperInvariant(); // tudo maiusculas
+
+            string PAcentos = "àèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜŸåÅçÇ"; // dicionários auxiliares
+            string PSacentos = "aeiouAEIOUaeiouyAEIOUYaeiouAEIOUanoANOaeiouyAEIOUYaAcC";
+            char[] pacentos = PAcentos.ToCharArray();
+            char[] psacentos = PSacentos.ToCharArray();
+            char[] plvr_aux = plvr.ToCharArray();
+
+            for (int i = 0; i < plvr_aux.Length; i++)
+            {
+                for (int i2 = 0; i2 < pacentos.Length; i2++)
+                {
+                    if (plvr_aux[i] == pacentos[i2]) // verificação e troca de letras com acentos
+                        plvr_aux[i] = psacentos[i2];
+                }
+            }
+
+
+            return plvr_aux;
         }
 
         static void Le_Verifica_Letras(string plvr)
         {
-            int controlo;
+            int contador = 0,controlo;
             char[] palavra, entrada;
             string ent = "";
             int tentativas = 0;
 
-            palavra = plvr.ToCharArray();
-
-
-
             do
             {
-                Console.Write("Tentativa {0}:", tentativas + 1);
-                ent = Console.ReadLine();
-                entrada = ent.ToCharArray();
-                tentativas++;
 
-                if (ent.Equals(plvr, StringComparison.InvariantCultureIgnoreCase) && ent.Equals(plvr, StringComparison.OrdinalIgnoreCase))
+                do
                 {
-                    Console.ForegroundColor = ConsoleColor.DarkGreen;
-                    Console.WriteLine("{0}", plvr);
-                    Console.ResetColor();
-                    Console.WriteLine("palvra Correta");
-                    break;
-                }
+                    Console.Write("Tentativa {0}:", tentativas + 1);
+                    ent = Console.ReadLine();
+                    if (ent.Length != 5)
+                        Console.WriteLine("ERRO: Palavra tem de ter 5 carcatares");
+                } while (ent.Length != 5);
+
+
+
+                palavra = Remover_Acentos(plvr);
+                entrada = Remover_Acentos(ent);
+
+                tentativas++;
+                int [] verif = { 0, 0, 0, 0, 0 }; // auxiliar para não duplicar colocação de letras amarelas
+ 
 
                 for (int i = 0; i < ent.Length; i++)
                 {
@@ -58,45 +190,185 @@ namespace ConsoleApp1
                         Console.ForegroundColor = ConsoleColor.DarkGreen;
                         Console.Write("{0}", entrada[i]);
                         Console.ResetColor();
-                        controlo = 1;
-
+                        contador++; // contador auxiliar
+                        controlo = 1; // controlo auxiliar @ verificar optimização algortimo 
                     }
                     else
                     {
                         for (int i2 = 0; i2 < palavra.Length; i2++)
                         {
-                            if ((entrada[i] == palavra[i2]) && (i != i2))
+                            if (entrada[i] == palavra[i2] && verif[i2] == 0) // verifica se existe na palavra e verifica se existe mais que uma vez
                             {
+                                verif[i2] = 1; // altera valor na var auxiliar para não duplicar amarelos 
                                 Console.ForegroundColor = ConsoleColor.DarkYellow;
                                 Console.Write("{0}", entrada[i]);
                                 Console.ResetColor();
                                 controlo = 1;
                             }
-                            if (controlo == 1)
-                                break;
                         }
                     }
                     if (controlo == 0)
-                        Console.Write("{0}", entrada[i]);
+                        Console.Write("{0}", entrada[i]); 
 
                 }
-                Console.WriteLine();
-            } while (tentativas < 6);
+
+             Console.WriteLine();
+            } while (contador <4 && tentativas <6); // verifica se já foi introduzida a palavra correta ou se já foram esgotadas as tentativas todas
             if (tentativas == 6)
                 Console.WriteLine("Esgotaste todas as tentativas");
-   
+            else
+                Console.WriteLine("Palavra Correta! '{0}'", plvr);
+        }
+
+        static void DesenharMenu()
+        {
+
+            Console.WriteLine("********************");
+            Console.WriteLine("* Jogo das Palavras *");
+
+            Console.WriteLine("********************");
+            MenuPrincipal();
+
+
+        }
+        static void MenuPrincipal()
+        {
+
+
+            Console.WriteLine("Menu:\n" +
+               "\n1 - Área de Administrador" +
+               "\n2 - Login - Jogar" +
+               "\n3 - Registar" +
+               "\n4 - Sair");
+            Console.WriteLine("");
+            Console.WriteLine("********************");
+            int m1 = 0;
+            m1 = Convert.ToInt32(Console.ReadLine());
+            switch (m1)
+            {
+
+                case 1:
+                    //Console.Clear();
+                    Console.WriteLine("Area Administrador");
+                    //Console.ReadKey();
+                    MenuAdmin();
+                    Console.WriteLine("");
+                    //MenuPrincipal();
+
+                    break;
+
+                case 2:
+                    //Console.Clear();
+                    Console.WriteLine("Em desenvolvimento");
+                    //Console.Read();
+                    Console.WriteLine("");
+                    MenuPrincipal();
+                    break;
+
+
+                case 3:
+                    //Console.Clear();
+                    Console.WriteLine("Em desenvolvimento");
+                    //Console.ReadKey();
+                    Console.WriteLine("");
+                    MenuPrincipal();
+                    break;
+
+                default:
+                    //Console.Clear();
+                    Console.WriteLine("A opção que selecionaste não existe!");
+                    Console.WriteLine("");
+                    MenuPrincipal();
+                    break;
+            }
+
+            Console.WriteLine("");
+            //MenuPrincipal();
+
+
+
+        }
+        static void MenuAdmin()
+        {
+            //DesenharMenu();
+            Console.Clear();
+            Console.WriteLine("Menu Administrador:\n" +
+               "\n1 - Adicionar Jogadores" +
+               "\n2 - Eliminar Jogadores" +
+               "\n3 - Consultar Informação dos Jogadores" +
+               "\n4 - Logout");
+            Console.WriteLine("");
+            Console.WriteLine("********************");
+            int m2 = 0;
+            m2 = Convert.ToInt32(Console.ReadLine());
+            switch (m2)
+            {
+
+                case 1:
+                    AdicionarJogador();
+                    Console.ReadLine();
+                    MenuAdmin();
+                    break;
+
+                case 2:
+                    EliminarJogadores();
+                    Console.ReadLine();
+                    MenuAdmin();
+                    break;
+
+
+                case 3:
+                    ListarJogadores();
+                    Console.ReadLine();
+                    MenuAdmin();
+                    break;
+                case 4:
+                    //Console.Clear();
+                    Console.WriteLine("LOGOUT");
+                    //Console.ReadKey();
+                    Console.WriteLine("***EM DESENVOLVIMENTO***");
+                    Console.WriteLine("");
+                    MenuPrincipal();
+                    break;
+
+                default:
+                    //Console.Clear();
+                    Console.WriteLine("A opção que selecionaste não existe!");
+                    Console.WriteLine("");
+                    MenuAdmin();
+                    break;
+
+
+            }
+            Console.WriteLine("");
+        }
+        static void MenuJogador()
+        {
+            //Console.Clear();
+            DesenharMenu();
+            Console.WriteLine("Menu:\n" +
+                   "\n1 - Jogar" +
+                   "\n2 - Ranking" +
+                   "\n3 - Logout");
+            Console.WriteLine("********************");
         }
 
         static void Main(string[] args)
         {
             //7105 @ random
+            //string plvr = "";
+            //plvr= LerPalavra();
+            //plvr = "Então"; // UTILIZADO APENAS PARA TESTES
+            //Console.WriteLine(plvr);
+            // Le_Verifica_Letras(plvr);
 
-            string plvr = "";
-            
+            //########################################### MENU #######################################
 
-            plvr= LerPalavra();
-            Console.WriteLine(plvr);
-            Le_Verifica_Letras(plvr);
+            // Le_Verifica_Letras(plvr); // Remover de comentários para testar o modo JOGO
+
+            // A nivel de menus só regista jogadores para já 
+
+            DesenharMenu(); // Para testar o modo jogo colocar em comentários
 
 
         }
