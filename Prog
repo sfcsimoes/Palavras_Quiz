@@ -14,17 +14,17 @@ namespace ConsoleApp1
             Jogador j=new Jogador ();
             StreamWriter sw;
 
-            Console.WriteLine("Nome: ");
+            Console.Write("Nome: ");
             j.Nome = Console.ReadLine ();
-            Console.WriteLine("E-mail: ");
+            Console.Write("E-mail: ");
             j.Email = Console.ReadLine();          
-            Console.WriteLine("Password");
+            Console.Write("Password");
             j.Password = Console.ReadLine ();
             j.Data = DateTime.UtcNow;
 
 
             if (File.Exists(@"Jogadores.txt"))
-                sw = File.AppendText(@"Jogadores.txt"); // apprend faz com que o ponteiro de escrita vá para a ultima linha do ficheiro
+                sw = File.AppendText(@"Jogadores.txt"); //  faz com que o ponteiro de escrita vá para a ultima linha do ficheiro
             else
                 sw = File.CreateText(@"Jogadores.txt"); // caso ficheiro nao exista cria o ficheiro
 
@@ -59,7 +59,7 @@ namespace ConsoleApp1
             
             foreach (Jogador jl in jgr) // varrer todos os dados utilizando o ponteir jl
             {
-                Console.Write("Nome: {0}\nE-mail: {1}\nData Ultimo Acesso: {2}\nPassword: {3}\n-----", jl.Nome, jl.Email, jl.Data, jl.Password);
+                Console.Write("Nome: {0}\nE-mail: {1}\nData Ultimo Acesso: {2}\nPassword: {3}\n-----\n", jl.Nome, jl.Email, jl.Data, jl.Password);
             }
 
 
@@ -76,7 +76,7 @@ namespace ConsoleApp1
             {
                 while ((navega = SR.ReadLine()) != null)
                 {
-                    copia = navega.Split(';');
+                    copia = navega.Split(';'); // remover divisores
                     jgr.Add(new Jogador(copia[0], copia[1], Convert.ToDateTime(copia[2]), copia[3]));
 
                 }
@@ -94,25 +94,67 @@ namespace ConsoleApp1
             Console.Write("Qual o jogador que pretende remover? (Nome)");
             elimina=Console.ReadLine();
 
-            LeJogadores(jgr);
+            LeJogadores(jgr); // carregar a lista de jogadores
 
-            if (jgr.Exists(jgr => jgr.Nome == elimina))
+            if (jgr.Exists(jgr => jgr.Nome == elimina)) // verifica se o jogador faz parte da lista 
             {
-                foreach (Jogador jl in jgr)
-                {
-                    if (jl.Nome == elimina)
-                        jgr.Remove(jl);
-                }
-
-
+                foreach (Jogador j in jgr) // ponteiro para correr a lista
+                    if (j.Nome == elimina) // verifica se está no jogador que pretendemos eliminar
+                    {
+                        jgr.Remove(j); // remove jogador
+                        break; // break de control para nao ficar em loop o foreach
+                    }
             }
             else
-                Console.WriteLine("Esse jogar não existe na base dados");
+                Console.WriteLine("Esse jogar não existe na base de dados");
 
             LimpaFicheiro(jgr);
+            Console.Write("Jogador eliminado com sucesso\nPressione ENTER para regressa ao menu");
+            Console.ReadLine();
+            
 
 
         }
+
+        static void Jogar()
+        {
+            List<Jogador> jogadores = new List<Jogador>();
+            string j,p;
+
+            LeJogadores(jogadores);
+            Console.Write("Nome: ");
+            j = Console.ReadLine();
+            
+            if (jogadores.Exists(jogadores => jogadores.Nome == j))
+            {
+                Console.Write("Password: ");
+                p=Console.ReadLine();
+                foreach (Jogador jgr in jogadores)
+                {
+                    if ((jgr.Nome == j) && (jgr.Password == p))
+                    {     
+                        Console.Write("Bem vindo "+ jgr.Nome+"\nPressione ENTER para avançar para o jogo! Boa Sorte!");
+                        Console.ReadKey();
+                        Console.Clear();
+                        Le_Verifica_Letras("Então");
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Palavra pass incorreta!");
+                        Console.ReadKey();
+                        break;
+                    }
+                }
+
+            }
+            else
+                Console.WriteLine("Jogador não existe na base de dados. Faça o registo no menu principal");
+
+
+        }
+
+
 
 
         //static string LerPalavra()
@@ -239,7 +281,8 @@ namespace ConsoleApp1
                "\n1 - Área de Administrador" +
                "\n2 - Login - Jogar" +
                "\n3 - Registar" +
-               "\n4 - Sair");
+               "\n4 - Ranking" +
+               "\n5 - Sair");
             Console.WriteLine("");
             Console.WriteLine("********************");
             int m1 = 0;
@@ -258,22 +301,20 @@ namespace ConsoleApp1
                     break;
 
                 case 2:
-                    //Console.Clear();
-                    Console.WriteLine("Em desenvolvimento");
-                    //Console.Read();
+                    Jogar();
                     Console.WriteLine("");
                     MenuPrincipal();
                     break;
 
 
                 case 3:
-                    //Console.Clear();
-                    Console.WriteLine("Em desenvolvimento");
-                    //Console.ReadKey();
+                    AdicionarJogador();
                     Console.WriteLine("");
                     MenuPrincipal();
                     break;
-
+                case 5:                    
+                    Environment.Exit(0);
+                    break;
                 default:
                     //Console.Clear();
                     Console.WriteLine("A opção que selecionaste não existe!");
@@ -296,7 +337,7 @@ namespace ConsoleApp1
                "\n1 - Adicionar Jogadores" +
                "\n2 - Eliminar Jogadores" +
                "\n3 - Consultar Informação dos Jogadores" +
-               "\n4 - Logout");
+               "\n4 - Menu Principal");
             Console.WriteLine("");
             Console.WriteLine("********************");
             int m2 = 0;
@@ -312,7 +353,6 @@ namespace ConsoleApp1
 
                 case 2:
                     EliminarJogadores();
-                    Console.ReadLine();
                     MenuAdmin();
                     break;
 
@@ -323,11 +363,7 @@ namespace ConsoleApp1
                     MenuAdmin();
                     break;
                 case 4:
-                    //Console.Clear();
-                    Console.WriteLine("LOGOUT");
-                    //Console.ReadKey();
-                    Console.WriteLine("***EM DESENVOLVIMENTO***");
-                    Console.WriteLine("");
+                    Console.Clear();
                     MenuPrincipal();
                     break;
 
@@ -353,22 +389,35 @@ namespace ConsoleApp1
             Console.WriteLine("********************");
         }
 
+        static void MenuRanking()
+        {
+            DesenharMenu();
+            {
+                Console.WriteLine("1 - TOP 5 JOGO (MAX PTS JOGO)\n2 - TOP 5 GLOBAL (MÉDIA PTS JOGOS\n3 - TOP 5 (TOTAL PTS)\n4 - RANKING GLOBAL ");
+                // ### RANKING GLOBAL -
+                // MAX PTS POR JOGO
+                // MEDIA DE PTS POR TODOS OS JOGOS
+                // TOTAL PONTOS 
+            }
+        }
+
         static void Main(string[] args)
         {
             //7105 @ random
-            //string plvr = "";
-            //plvr= LerPalavra();
-            //plvr = "Então"; // UTILIZADO APENAS PARA TESTES
+              
             //Console.WriteLine(plvr);
-            // Le_Verifica_Letras(plvr);
+            // Le_Verifica_Letras("Então");
 
             //########################################### MENU #######################################
 
-            // Le_Verifica_Letras(plvr); // Remover de comentários para testar o modo JOGO
 
-            // A nivel de menus só regista jogadores para já 
+            List<Resultados> resultados = new List<Resultados>();  
 
-            DesenharMenu(); // Para testar o modo jogo colocar em comentários
+            resultados.Add(new Resultados()); TESTAR EM BINÁRIO
+
+
+
+            //DesenharMenu(); // Para testar o modo jogo colocar em comentários
 
 
         }
