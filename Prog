@@ -34,6 +34,12 @@ namespace ConsoleApp1
 
         }
 
+        static void AdicionaPontos()
+        {
+
+
+        }
+
         static void LimpaFicheiro(List<Jogador>jgr)
         {
             StreamWriter SR = new StreamWriter(@"Jogadores.txt", false);
@@ -403,23 +409,29 @@ namespace ConsoleApp1
 
         static void Main(string[] args)
         {
+            // teste para guardar em binário
+ 
+            List<Resultados> res = new List<Resultados>();
+            
+            res.Add(new Resultados("SERGIO SIMOES", DateTime.Now,10));
+
+            using (FileStream FS = new FileStream("Resultados.bin", FileMode.Append))
+            {
+                using (BinaryWriter BW = new BinaryWriter(FS))
+                {
+                    BW.Write(res,sizeof(Resultados));
+                }
+            }
+
             //7105 @ random
-              
+
             //Console.WriteLine(plvr);
             // Le_Verifica_Letras("Então");
 
             //########################################### MENU #######################################
+            //List<Resultados> resultados = new List<Resultados>();  
+            //resultados.Add(new Resultados()); TESTAR EM BINÁRIO
 
-
-            List<Resultados> resultados = new List<Resultados>();  
-
-            resultados.Add(new Resultados()); TESTAR EM BINÁRIO
-
-
-
-            //DesenharMenu(); // Para testar o modo jogo colocar em comentários
-
-
-        }
+       }     //DesenharMenu(); // Para testar o modo jogo colocar em comentários
     }
 }
